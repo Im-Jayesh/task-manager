@@ -1,7 +1,6 @@
-// src/app/api/tasks/route.js
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, or } from 'firebase/firestore';
 
 export async function POST(request) {
   try {
@@ -22,10 +21,21 @@ export async function GET(request) {
   const role = searchParams.get('role');
 
   try {
-    let q = collection(db, 'tasks');
-    if (role !== 'admin' && uid) {
-      q = query(collection(db, 'tasks'), where('ownerId', '==', uid)); 
+    let q;
+    const tasksRef = collection(db, 'tasks');
+
+    if (role === 'admin') {
+      q = query(tasksRef);
+    } else {
+      q = query(
+        tasksRef,
+        or(
+          where('ownerId', '==', uid),
+          where('assignedTo', '==', uid)
+        )
+      );
     }
+
     const snapshot = await getDocs(q);
     const tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return NextResponse.json(tasks, { status: 200 });
