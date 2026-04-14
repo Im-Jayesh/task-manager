@@ -4,13 +4,11 @@ import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export async function PUT(request, { params }) {
   try {
-    // FIX: Await the params first
     const resolvedParams = await params;
     const { id } = resolvedParams;
     
     const body = await request.json();
     
-    // Remove id from body to avoid Firestore mutation errors
     const { id: _, ...dataToUpdate } = body;
 
     const taskRef = doc(db, 'tasks', id);
@@ -28,7 +26,6 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    // UNWRAP PARAMS FIRST
     const resolvedParams = await params;
     const { id } = resolvedParams;
 

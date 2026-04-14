@@ -1,4 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  getDocs, 
+  query, 
+  where, 
+  serverTimestamp 
+} from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // Fetch tasks based on user role and uid
 export const fetchTasks = createAsyncThunk(
@@ -19,13 +31,11 @@ export const createTask = createAsyncThunk(
   'tasks/createTask',
   async (taskData, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskData),
-      });
-      if (!response.ok) throw new Error('Failed to create task');
-      return await response.json();
+      const docRef = await addDoc(collection(db, 'tasks'), {
+        ...taskData,
+        createdAt : serverTimestamp()
+      })
+      return {id: docRef.id, ...taskData};
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -37,13 +47,10 @@ export const updateTask = createAsyncThunk(
   'tasks/updateTask',
   async ({ id, ...updates }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      });
-      if (!response.ok) throw new Error('Failed to update task');
-      return await response.json();
+      const taskRef = doc(db, "tasks", id)
+      await updateDoc(taskRef, updates);
+
+      return {id, ...updates};
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -55,11 +62,8 @@ export const deleteTask = createAsyncThunk(
   'tasks/deleteTask',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete task');
-      return id; // Return the id to remove it from the state
+      await deleteDoc(doc(db, 'tasks', id));
+      return id;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -68,7 +72,7 @@ export const deleteTask = createAsyncThunk(
 
 const initialState = {
   items: [],
-  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+  status: 'idle', 
   error: null,
 };
 
@@ -76,8 +80,6 @@ const tasksSlice = createSlice({
   name: 'tasks',
   initialState,
   reducers: {
-    // Note: If you implement the Firestore onSnapshot for real-time updates as per the assignment, 
-    // you can use this synchronous action instead of the fetchTasks thunk to populate state.
     setTasksRealtime: (state, action) => {
       state.items = action.payload;
     }

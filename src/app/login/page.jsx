@@ -26,16 +26,13 @@ export default function AuthPage() {
       await signInWithEmailAndPassword(auth, data.email, data.password);
       router.push('/dashboard');
     } else {
-      // 1. Create Auth User
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
 
-      // 2. Create User Profile in Firestore (Assignment Requirement)
-      // We use the uid as the document ID
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         email: user.email,
-        role: 'user', // Default role per assignment
+        role: 'user', 
         createdAt: new Date().toISOString()
       });
 

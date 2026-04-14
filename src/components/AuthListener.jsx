@@ -17,23 +17,26 @@ export default function AuthListener({ children }) {
       if (user) {
         let role = 'user';
         try {
-          // Race the doc fetch against a 2s timeout
           const userDoc = await Promise.race([
             getDoc(doc(db, 'users', user.uid)),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000))
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error("Firestore Timeout")), 10000)
+            )
           ]);
           
           if (userDoc?.exists()) {
             role = userDoc.data().role;
           }
         } catch (e) {
-          console.warn("Firestore unreachable, defaulting to 'user' role");
+          console.log("AuthListener Error:", e.message);
+          // Defaulting to user role if Firestore is actually down
         }
 
         dispatch(setUser({ uid: user.uid, email: user.email, role }));
       } else {
         dispatch(clearUser());
       }
+      dispatch(setAuthLoading(false)); 
     });
   }, [dispatch]);
 

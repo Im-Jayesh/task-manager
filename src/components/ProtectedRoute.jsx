@@ -4,7 +4,6 @@ import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { CircularProgress, Box } from "@mui/material";
 
-// MUST be 'export default'
 export default function ProtectedRoute({ children, adminOnly = false }) {
   const { user, isAuthenticated, isLoading } = useSelector((state) => state.auth);
   const router = useRouter();

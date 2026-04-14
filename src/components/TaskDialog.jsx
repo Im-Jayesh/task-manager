@@ -113,14 +113,21 @@ export default function TaskDialog({ open, handleClose, task = null }) {
               name="assignedTo"
               control={control}
               render={({ field }) => (
-                <TextField {...field} select label="Assign To User" fullWidth>
+                <TextField 
+                  {...field} 
+                  select 
+                  label="Assign To User" 
+                  fullWidth
+                  // Force a default empty string if users haven't loaded yet
+                  value={users.length > 0 ? field.value : ''} 
+                >
                   <MenuItem value="">None</MenuItem>
                   {users.map(u => (
                     <MenuItem key={u.uid} value={u.uid}>{u.email}</MenuItem>
                   ))}
                 </TextField>
               )}
-            />
+/>
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>

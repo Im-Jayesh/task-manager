@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  user: null, // Will store { uid, email, role }
+  user: null, 
   isAuthenticated: false,
-  isLoading: true, // Useful for showing a spinner while Firebase checks auth state
+  isLoading: true,
 };
 
 const authSlice = createSlice({
